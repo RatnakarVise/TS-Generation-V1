@@ -46,13 +46,7 @@ prompt: Carefully analyze the payload(selectionscreen) and List all UI/screen fi
 #Processing Logic & Control Flow
 type: text
 description: High-level, stepwise narrative of program flow and key processing stages, based strictly on the implemented code (do not infer unimplemented or generic behaviors).
-prompt: Carefully analyze the provided payload(explanation) and describe the main program steps and the flow of control, including key processing stages, major conditionals (IF/CASE statements), and iterations (loops). Only include logic that is explicitly present in the payload explanation and omit any general or assumed SAP behavior. Present the explanation as a clear, sequential, step-by-step or bullet-point, reflecting the actual implemented logic found in payload explanation.
-
-#Logic Block Summary
-type: table
-description: Tabular summary of logic blocks (PERFORMs/methods/FMs): parameters, functions, calls.
-fields: [Block Name, Type, Purpose, Input Params, Output Params, Calls Made, Description]
-prompt: Present the results strictly as a table with the columns: Block Name, Type, Purpose, Input Params, Output Params, Calls Made, Description. Carefully analyze the provided payload(explanation) For each logic block, summarize name, type, purpose, params, and calls.
+prompt: Carefully analyze the provided payload(pgm_name, type, explanation) and describe the main program steps and the flow of control, including key processing stages, major conditionals (IF/CASE statements), and iterations (loops). Only include logic that is explicitly present in the payload explanation and omit any general or assumed SAP behavior. Present the explanation as a clear, sequential, step-by-step or bullet-point, reflecting the actual implemented logic found in payload explanation.
 
 #Detailed Logic Block Descriptions
 type: text
@@ -92,7 +86,7 @@ description: Summary Table of SAP authorization objects, authority-check stateme
 fields: [Object/Check Type, Name, Check Logic/Location, Description]
 prompt: List all SAP authorization objects, authority-check statements, and any required user roles or profiles in table.Use provided values from payload(explanation) or [None] if missing.
 
-#Testing (Unit & Scenario)
+#Test Scenario
 type: table
 description: Table of test plan coverage/scenarios, input data, expected outputs, status.
 fields:[Test Case, Objective, Input Data, Expected Output, Actual Result/Status, Sign-off/Comments]

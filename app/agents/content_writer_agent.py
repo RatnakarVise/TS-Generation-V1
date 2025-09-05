@@ -3,9 +3,7 @@ import json
 import logging
 from typing import Any, Dict, List
 import openai
-import dotenv
-from dotenv import load_dotenv
-load_dotenv()
+
 logger = logging.getLogger("content_writer_agent")
 logging.basicConfig(level=logging.INFO)
 
@@ -49,13 +47,17 @@ def filter_payload_by_keys(payload: Dict[str, Any], required_keys: List[str]) ->
 # Each bundle is ( [section_name1, section_name2, ...], [payload_key1, payload_key2, ...])
 # NOT clubbed sections can be left as ["Section"], ["payload_key1"] so they're handled individually.
 SECTION_BUNDLES = [
-    # (["Index"], []),  # Always first
     (["Document Information", "Introduction", "Requirement Overview", "Solution Approach", "SAP Object Details"], ['pgm_name','type', 'inc_name', 'explanation']),
     # (["Data Declarations & SAP Tables Used"], ["declarations"]),
     (["User Interface Details"], ["selectionscreen"]),
-    (["Processing Logic & Control Flow", "Logic Block Summary", "Detailed Logic Block Descriptions", "Output Details"], ['pgm_name', 'type', 'explanation']),
-    (["Data Declarations & SAP Tables Used", "Enhancements & Modifications", "Error Handling & Logging", "Performance Considerations", "Security & Authorizations", "Testing (Unit & Scenario)", "Flow Diagram"], [ 'selectionscreen', 'declarations', 'explanation']),
-    # (["Flow Diagram"], ['pgm_name', 'type', 'explanation']),
+    # (["Processing Logic & Control Flow", "Logic Block Summary", "Detailed Logic Block Descriptions", "Output Details"], ['pgm_name', 'type', 'explanation']),
+    (["Processing Logic & Control Flow"], ['pgm_name', 'type', 'explanation']),
+    # (["Logic Block Summary"], ['pgm_name', 'type', 'explanation']),
+    (["Detailed Logic Block Descriptions"], ['pgm_name', 'type', 'explanation']),
+    (["Output Details"], ['pgm_name', 'type', 'explanation']),
+    (["Data Declarations & SAP Tables Used", "Enhancements & Modifications", "Error Handling & Logging", "Performance Considerations", "Security & Authorizations"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Test Scenario"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Flow Diagram"],[ 'selectionscreen', 'declarations', 'explanation']),
     (["Transport Management"], ['transport']),
     (["Sign-Off"], []),
 ]
@@ -114,19 +116,6 @@ class ContentWriterAgent:
                 ordered_results.append(matched)
             else:
                 ordered_results.append({"section_name": section_name, "content": "[ERROR: Section content missing]"})
-        # ✅ Build Index dynamically
-        # index_content = "\n".join([f"{i+1}. {sec['section_name']}" for i, sec in enumerate(ordered_results)])
-        # index_section = {"section_name": "Index", "content": index_content}
-        # # If Index already exists, replace it
-        # existing_idx = next((i for i, sec in enumerate(ordered_results) if sec["section_name"] == "Index"), None)
-        # if existing_idx is not None:
-        #     ordered_results[existing_idx] = index_section
-        # else:
-        #     ordered_results.insert(0, index_section)
-        # # Prepend Index
-        # ordered_results.insert(0, index_section)
-        # logger.info(f"INDEX CONTENT:\n{index_content}")
-
         return ordered_results
 
     def generate_sections(self, section_names, section_bibles, payload) -> Dict[str, str]:
@@ -142,7 +131,7 @@ class ContentWriterAgent:
         batched_prompt += "- Strictly follow its 'BIBLE' (authoritative knowledge) shown for that section\n"
         batched_prompt += "- Use ONLY the information in the provided payload JSON\n"
         batched_prompt += "- For each section, output as:\n<<START:{Section Name}>>\n<content>\n<<END:{Section Name}>>\n\n"
-
+        batched_prompt += "Important: You must output every section, even if the content is empty or you have no information. Do NOT skip any sections.\n"
         batched_prompt += f"\nThe relevant context (payload) for all these sections is:\n```json\n{context_json}\n```\n"
 
         for idx, s in enumerate(section_names):
