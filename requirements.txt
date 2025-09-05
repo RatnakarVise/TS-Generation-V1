@@ -7,4 +7,3 @@ openai
 python-dotenv
 python-docx
 matplotlib
-pywin32
