@@ -3,7 +3,8 @@ import json
 import logging
 from typing import Any, Dict, List
 import openai
-
+from dotenv import load_dotenv
+load_dotenv()
 logger = logging.getLogger("content_writer_agent")
 logging.basicConfig(level=logging.INFO)
 

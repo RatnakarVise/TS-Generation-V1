@@ -26,13 +26,20 @@ def add_toc(paragraph):
     run = paragraph.add_run()
     fldChar = OxmlElement("w:fldChar")
     fldChar.set(qn("w:fldCharType"), "begin")
+
     instrText = OxmlElement("w:instrText")
     instrText.text = 'TOC \\o "1-3" \\h \\z \\u'
+
     fldChar2 = OxmlElement("w:fldChar")
     fldChar2.set(qn("w:fldCharType"), "separate")
+
     fldChar3 = OxmlElement("w:fldChar")
     fldChar3.set(qn("w:fldCharType"), "end")
-    run._r.append(fldChar); run._r.append(instrText); run._r.append(fldChar2); run._r.append(fldChar3)
+
+    run._r.append(fldChar); 
+    run._r.append(instrText); 
+    run._r.append(fldChar2); 
+    run._r.append(fldChar3)
 
 def add_bookmark(paragraph, name, bid):
     """Create a collapsed bookmark on the given paragraph."""
@@ -195,20 +202,34 @@ def build_document(content, sections, flow_diagram_agent=None, diagram_dir="diag
     # Add main heading
     add_heading(doc, "Technical Specification Document", 0)
      # Precompute bookmark names (used by index + later applied to headings)
-    bookmark_names = [f"sec_{i+1}" for i in range(len(sections))]
+    
     add_heading(doc, "Index", 1)
+    bookmark_names = [f"sec_{i+1}" for i in range(len(sections))]
 
-    # 2) Custom Index on page 1 with PAGEREF fields (real page numbers after Update Field)
-    # idx_heading = add_heading(doc, "Index", 1)
+    for i, section in enumerate(sections):
+        title = section.get("title")
+        bookmark_name = f"sec_{i+1}"
+
+        # Insert paragraph for index entry
+        p = doc.add_paragraph()
+        run = p.add_run(f"{i+1}. {title}")
+        tab_stops = p.paragraph_format.tab_stops
+        tab_stops.add_tab_stop(Inches(6.0), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
+        run.add_tab()
+        add_pageref_field(p, bookmark_name)
 
     # Set a right-aligned tab with dot leader for each index entry (looks like: Title ....... 3)
     right_pos = Inches(6.0)  # adjust if your page margins differ
 
     for i, section in enumerate(sections):
         title = section.get("title")
+        bookmark_name = f"sec_{i+1}"
         header = f"{i+1}. {title}"
-        add_heading(doc, header, 1)
-
+        # add_heading(doc, header, 1)
+        p = add_heading(doc, header, 1)
+        # Add bookmark for index
+        # add_bookmark(p, f"sec_{i+1}", i+1)
+        add_bookmark(p, bookmark_name, i+1)
         sec_content = find_section_content(content, title)
 
         # FLOW DIAGRAM SECTION HANDLING
